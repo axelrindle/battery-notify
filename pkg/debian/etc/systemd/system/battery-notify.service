@@ -1,0 +1,11 @@
+[Unit]
+Description=Send notifications when the battery state changes
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/battery-notify
+WorkingDirectory=/etc/battery-notify
+
+[Install]
+WantedBy=default.target

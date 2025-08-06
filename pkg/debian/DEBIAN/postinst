@@ -1,0 +1,7 @@
+#!/bin/sh
+
+set -ex
+
+systemctl daemon-reload
+systemctl enable battery-notify
+systemctl start battery-notify
