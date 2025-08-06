@@ -39,8 +39,11 @@ tasks:
     cmd: go run .
 
   pkg:debian:
+    preconditions:
+      - sh: '[ -z "${CI}" ] && exit 1'
+        msg: not running in ci
     deps:
       - task: build
     cmds:
       - cp "{{.OUTPUT_DIRECTORY}}/{{.OUTPUT_FILE_NAME}}{{.OUTPUT_FILE_SUFFIX}}" pkg/debian/usr/bin
-      - cd pkg/debian && docker build . -o . --platform {{.GOOS}}/{{.GOARCH}}
+      - cd pkg/debian && docker build . -o . --platform {{.GOOS}}/{{.GOARCH}} --build-arg ARCH={{.GOARCH}}

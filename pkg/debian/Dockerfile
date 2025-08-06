@@ -4,7 +4,10 @@ WORKDIR /usr/local/src
 
 COPY . .
 
-RUN dpkg-deb --build . battery-notify.deb
+ARG ARCH
+
+RUN echo "Architecture: ${ARCH}" >> DEBIAN/control && \
+    dpkg-deb --build . battery-notify.deb
 
 
 FROM scratch
