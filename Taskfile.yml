@@ -39,9 +39,9 @@ tasks:
     cmd: go run .
 
   pkg:debian:
-    preconditions:
-      - sh: '[ -z "${CI}" ] && exit 1'
-        msg: not running in ci
+    # preconditions:
+    #   - sh: '[ -z "${CI}" ] && exit 1'
+    #     msg: not running in ci
     deps:
       - task: build
     cmds:
