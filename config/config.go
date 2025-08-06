@@ -14,7 +14,7 @@ type NotifyConfig struct {
 type Config struct {
 	Environment string `key:"env" default:"production" validate:"oneof=production development"`
 
-	DevicePath string `key:"device" validate:"required"`
+	DevicePath string `key:"device" validate:"required,dirpath,dir"`
 	Interval   int64  `key:"refresh" default:"30"`
 
 	Notifications []NotifyConfig `key:"notifications"`
