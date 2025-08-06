@@ -1,4 +1,5 @@
 Dockerfile
-.dockerignore
-.gitkeep
-.gitignore
+**/.dockerignore
+**/.gitkeep
+**/.gitignore
+*.deb
