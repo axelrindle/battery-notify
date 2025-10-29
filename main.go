@@ -44,6 +44,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if err := validateDevice(config.DevicePath); err != nil {
+		log.Fatal(err)
+	}
+
 	logger.Info("starting program", zap.String("mode", config.Environment))
 
 	app := &app.App{
