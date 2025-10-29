@@ -1,5 +1,6 @@
 Package: battery-notify
-Maintainer: Axel Rindle
 Description: Send notifications when the battery state changes
+Maintainer: Axel Rindle
 Source: https://github.com/axelrindle/battery-notify
+Priority: optional
 Pre-Depends: systemd
