@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - "*.*.*"
   pull_request:
     branches:
       - main
@@ -12,6 +14,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   GO_VERSION: '>=1.24.0'
+  TASK_VERSION: 3.x
 
 jobs:
   build:
@@ -23,60 +26,101 @@ jobs:
           - amd64
           - arm64
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
 
       - uses: arduino/setup-task@v2
         with:
-          version: 3.x
+          version: ${{ env.TASK_VERSION }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run tests
         run: task test
 
       - name: Build binary
-        run: task build OUTPUT_FILE_SUFFIX=".${{ github.ref_name }}"
+        run: task build OUTPUT_FILE_SUFFIX="-${{ github.ref_name }}-${{ matrix.arch }}"
         env:
           GOOS: linux
           GOARCH: ${{ matrix.arch }}
 
       - uses: actions/upload-artifact@v4
-        if: github.event_name == 'push'
         with:
           name: binary-${{ matrix.arch }}
           path: dist/*
 
-  package-debian:
+  package:
+    name: Package
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
     needs:
       - build
     strategy:
       matrix:
+        target:
+          - debian
         arch:
           - amd64
           - arm64
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
 
       - uses: arduino/setup-task@v2
         with:
-          version: 3.x
+          version: ${{ env.TASK_VERSION }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: docker/setup-qemu-action@v3
+      - uses: actions/download-artifact@v5
+        with:
+          name: binary-${{ matrix.arch }}
+          path: pkg/debian/usr/bin
 
-      - name: Build deb archive
-        run: task pkg:debian
+      - name: Package
+        run: task pkg:${{ matrix.target }}
         env:
           GOOS: linux
           GOARCH: ${{ matrix.arch }}
 
       - uses: actions/upload-artifact@v4
-        if: github.event_name == 'push'
         with:
           name: deb-${{ matrix.arch }}
           path: pkg/debian/*.deb
+
+  release:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    needs:
+      - package
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v5
+        id: artifacts
+        with:
+          merge-multiple: true
+          path: artifacts
+
+      - uses: sean0x42/markdown-extract@v2
+        id: extract-changelog
+        with:
+          file: CHANGELOG.md
+          pattern: ${{ github.ref }}
+          no-print-matched-heading: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          prerelease: false
+          body: |
+            ## Changelog
+            ${{ steps.extract-changelog.outputs.markdown }}
+          files: |
+            ${{ steps.artifacts.outputs.download-path }}/*
