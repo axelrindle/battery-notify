@@ -1,0 +1,21 @@
+device: /sys/class/power_supply/BAT1
+
+notifications:
+  - id: battery_low
+    condition: charge < 20
+    type: http
+    url: https://homeassistant.homelab.local/api/services/switch/turn_on
+    method: POST
+    headers:
+      Authorization: Bearer <TOKEN>
+    body: |
+      { "entity_id": "switch.homeassistant_gui_power" }
+  - id: battery_full
+    condition: charge > 95
+    type: http
+    url: https://homeassistant.homelab.local/api/services/switch/turn_off
+    method: POST
+    headers:
+      Authorization: Bearer <TOKEN>
+    body: |
+      { "entity_id": "switch.homeassistant_gui_power" }
