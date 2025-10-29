@@ -1,5 +1,4 @@
 Package: battery-notify
-Version: 0.1.0
 Maintainer: Axel Rindle
 Description: Send notifications when the battery state changes
 Source: https://github.com/axelrindle/battery-notify
